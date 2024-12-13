@@ -49,7 +49,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Function to extract text from PDF
-from PyPDF2 import PdfReader
 
 def extract_text_from_pdf(file):
     text = ""
