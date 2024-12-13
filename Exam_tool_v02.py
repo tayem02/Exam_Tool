@@ -49,11 +49,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Function to extract text from PDF
+from PyPDF2 import PdfReader
+
 def extract_text_from_pdf(file):
     text = ""
-    pdf_document = fitz.open(stream=file.read(), filetype="pdf")
-    for page in pdf_document:
-        text += page.get_text()
+    reader = PdfReader(file)
+    for page in reader.pages:
+        text += page.extract_text()
     return text
 
 # Function to generate questions using OpenAI API
