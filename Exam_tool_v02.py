@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 #import fitz 
-import openai
+#import openai
 import time
 
 st.set_page_config(page_title="PDF Quiz Generator", layout="wide")
