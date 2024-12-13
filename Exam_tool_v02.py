@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import fitz as fitz
+import fitz  # PyMuPDF
 import openai
 import time
 
@@ -49,12 +49,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Function to extract text from PDF
-
 def extract_text_from_pdf(file):
     text = ""
-    reader = PdfReader(file)
-    for page in reader.pages:
-        text += page.extract_text()
+    pdf_document = fitz.open(stream=file.read(), filetype="pdf")
+    for page in pdf_document:
+        text += page.get_text()
     return text
 
 # Function to generate questions using OpenAI API
