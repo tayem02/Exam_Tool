@@ -106,7 +106,7 @@ def main():
     with col3:
         api_key = st.text_input("Enter your OpenAI API Key", type="password")
     with col4:
-        model = st.selectbox("Select Model", ["gpt-3.5-turbo"])
+        model = st.selectbox("Select Model", ["gpt-3.5-turbo" , "gpt-4o"])
 
 
     if uploaded_file is not None and st.button("Generate Quiz"):
