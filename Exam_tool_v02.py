@@ -85,9 +85,21 @@ def parse_questions(raw_questions):
             try:
                 parts = question.split("\n")
                 q = parts[0]  # The question text
-                options = parts[1:]  # The list of options
-                correct = options[0]  # Assume the first option is correct (adjust if API marks it differently)
-                questions.append({"question": q, "options": options, "correct": correct})
+                options = []
+                correct = None
+
+                for option in parts[1:]:
+                    if option.startswith("*"):  # Assuming the correct answer is marked with an asterisk (*)
+                        options.append(option[1:].strip())  # Remove the asterisk
+                        correct = option[1:].strip()
+                    else:
+                        options.append(option.strip())
+
+                if correct is None:
+                    st.warning(f"No correct answer marked for question: {q}")
+                else:
+                    questions.append({"question": q, "options": options, "correct": correct})
+
             except IndexError:
                 st.warning(f"Skipping malformed question: {question}")
     return questions
