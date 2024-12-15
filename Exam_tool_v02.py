@@ -4,7 +4,7 @@ import numpy as np
 import fitz  # PyMuPDF
 import openai
 import time
-import re 
+import re
 
 st.set_page_config(page_title="PDF Quiz Generator", layout="wide")
 
@@ -17,10 +17,10 @@ st.markdown("""
  padding: 20px;
  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
  margin: 10px;
- border: 2px solid #ddd; /* Border around the card */
+ border: 2px solid #ddd;
  text-align: center;
- height: auto; /* Auto height to fit content */
- overflow: hidden; /* Prevent overflow of text */
+ height: auto;
+ overflow: hidden;
  }
 
  .card h4 {
@@ -31,9 +31,9 @@ st.markdown("""
  }
 
  .metric-value {
- font-size: 30px; /* Font size for the value */
+ font-size: 30px;
  font-weight: bold;
- color: #4CAF50; /* Color for the value */
+ color: #4CAF50;
  margin-top: 0;
  }
 
@@ -77,7 +77,6 @@ def generate_questions(text, num_questions, difficulty, model, api_key):
         st.error(f"Error generating questions: {e}")
         return ""
 
-
 # Function to parse generated questions into a structured format
 def parse_questions(raw_questions):
     questions = []
@@ -89,15 +88,15 @@ def parse_questions(raw_questions):
                 options = []
                 correct_answer = None
 
-                # Extract options and format as A, B, C, D
+                # Extract options (A, B, C, D)
                 for option in parts[1:]:
-                    if re.match(r"^[A-D]\)", option):  # Match options A), B), C), D)
+                    if re.match(r"^[A-D]\)", option):  # Match options like A), B), C), D)
                         options.append(option.strip())
 
                 # Extract correct answer (e.g., "Correct Answer: C")
                 correct_match = re.search(r"Correct Answer: ([A-D])", question)
                 if correct_match:
-                    correct_letter = correct_match.group(1)  # Extract letter
+                    correct_letter = correct_match.group(1)  # Extract correct answer letter
                     correct_answer = next(
                         opt for opt in options if opt.startswith(f"{correct_letter})")
                     )
@@ -110,7 +109,6 @@ def parse_questions(raw_questions):
             except Exception as e:
                 st.warning(f"Error parsing question: {e}")
     return questions
-
 
 # Streamlit App
 def main():
@@ -126,7 +124,6 @@ def main():
         api_key = st.text_input("Enter your OpenAI API Key", type="password")
     with col4:
         model = st.selectbox("Select Model", ["gpt-3.5-turbo"])
-
 
     if uploaded_file is not None and st.button("Generate Quiz"):
         with st.spinner("Extracting text and generating questions..."):
@@ -164,32 +161,13 @@ def main():
         metrics_col1, metrics_col2, metrics_col3, metrics_col4 = st.columns(4)
 
         with metrics_col1:
-            st.markdown(
-                f"<h4 class='card'>Correct Answers <br> <br> <span style='color: green;'>"
-                f"{st.session_state['correct_answers']}/{num_questions}</span></h4>",
-                unsafe_allow_html=True
-            )
-
+            st.markdown(f"<h4 class='card'>Correct Answers<br><br><span class='metric-value'>{st.session_state['correct_answers']}/{num_questions}</span></h4>", unsafe_allow_html=True)
         with metrics_col2:
-            st.markdown(
-                f"<h4 class='card'>Percentage <br> <br> <span style='color: green;'>"
-                f"{(st.session_state['correct_answers'] / num_questions) * 100:.2f}%</span></h4>",
-                unsafe_allow_html=True
-            )
-
+            st.markdown(f"<h4 class='card'>Percentage<br><br><span class='metric-value'>{(st.session_state['correct_answers'] / num_questions) * 100:.2f}%</span></h4>", unsafe_allow_html=True)
         with metrics_col3:
-            st.markdown(
-                f"<h4 class='card'>Total Time <br> <br> <span style='color: green;'>"
-                f"{st.session_state['total_time']:.2f} seconds</span></h4>",
-                unsafe_allow_html=True
-            )
-
+            st.markdown(f"<h4 class='card'>Total Time<br><br><span class='metric-value'>{st.session_state['total_time']:.2f} seconds</span></h4>", unsafe_allow_html=True)
         with metrics_col4:
-            st.markdown(
-                f"<h4 class='card'>Average Time per Question <br> <br> <span style='color: green;'>"
-                f"{st.session_state['total_time'] / num_questions:.2f} seconds</span></h4>",
-                unsafe_allow_html=True
-            )
+            st.markdown(f"<h4 class='card'>Avg. Time per Question<br><br><span class='metric-value'>{st.session_state['total_time'] / num_questions:.2f} seconds</span></h4>", unsafe_allow_html=True)
 
         if st.button("Show Correct Answers"):
             st.header("Correct Answers")
