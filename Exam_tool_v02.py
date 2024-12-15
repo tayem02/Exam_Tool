@@ -84,30 +84,39 @@ def parse_questions(raw_questions):
         if question.strip():
             try:
                 parts = question.split("\n")
-                q = parts[0]  # Question text
+                q = parts[0].strip()  # Question text
                 options = []
                 correct_answer = None
 
-                # Extract options (A, B, C, D)
+                # Extract options and clean them
                 for option in parts[1:]:
-                    if re.match(r"^[A-D]\)", option):  # Match options like A), B), C), D)
+                    match = re.match(r"^[A-D]\)", option.strip())  # Match options A), B), C), D)
+                    if match:
                         options.append(option.strip())
 
                 # Extract correct answer (e.g., "Correct Answer: C")
-                correct_match = re.search(r"Correct Answer: ([A-D])", question)
+                correct_match = re.search(r"Correct Answer: ([A-D])", " ".join(parts))
                 if correct_match:
-                    correct_letter = correct_match.group(1)  # Extract correct answer letter
+                    correct_letter = correct_match.group(1)
                     correct_answer = next(
                         opt for opt in options if opt.startswith(f"{correct_letter})")
                     )
 
-                if correct_answer and len(options) == 4:
-                    questions.append({"question": q, "options": options, "correct": correct_answer})
+                # Validate the extracted question
+                if len(options) == 4 and correct_answer:
+                    questions.append({
+                        "question": q,
+                        "options": options,
+                        "correct": correct_answer
+                    })
                 else:
-                    st.warning(f"Skipping question due to missing data: {q}")
+                    st.warning(f"Skipping invalid question: {q}")
+                    st.write(f"Options: {options}, Correct Answer: {correct_answer}")
 
             except Exception as e:
-                st.warning(f"Error parsing question: {e}")
+                st.warning(f"Error parsing question: {question}")
+                st.write(f"Error Details: {e}")
+
     return questions
 
 # Streamlit App
