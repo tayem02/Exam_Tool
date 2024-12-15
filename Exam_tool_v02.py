@@ -4,6 +4,7 @@ import numpy as np
 import fitz  # PyMuPDF
 import openai
 import time
+import re 
 
 st.set_page_config(page_title="PDF Quiz Generator", layout="wide")
 
@@ -84,24 +85,30 @@ def parse_questions(raw_questions):
         if question.strip():
             try:
                 parts = question.split("\n")
-                q = parts[0]  # The question text
+                q = parts[0]  # Question text
                 options = []
-                correct = None
+                correct_answer = None
 
+                # Extract options and format as A, B, C, D
                 for option in parts[1:]:
-                    if option.startswith("*"):  # Assuming the correct answer is marked with an asterisk (*)
-                        options.append(option[1:].strip())  # Remove the asterisk
-                        correct = option[1:].strip()
-                    else:
+                    if re.match(r"^[A-D]\)", option):  # Match options A), B), C), D)
                         options.append(option.strip())
 
-                if correct is None:
-                    st.warning(f"No correct answer marked for question: {q}")
-                else:
-                    questions.append({"question": q, "options": options, "correct": correct})
+                # Extract correct answer (e.g., "Correct Answer: C")
+                correct_match = re.search(r"Correct Answer: ([A-D])", question)
+                if correct_match:
+                    correct_letter = correct_match.group(1)  # Extract letter
+                    correct_answer = next(
+                        opt for opt in options if opt.startswith(f"{correct_letter})")
+                    )
 
-            except IndexError:
-                st.warning(f"Skipping malformed question: {question}")
+                if correct_answer and len(options) == 4:
+                    questions.append({"question": q, "options": options, "correct": correct_answer})
+                else:
+                    st.warning(f"Skipping question due to missing data: {q}")
+
+            except Exception as e:
+                st.warning(f"Error parsing question: {e}")
     return questions
 
 
