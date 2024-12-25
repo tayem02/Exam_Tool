@@ -5,6 +5,7 @@ import fitz  # PyMuPDF
 import openai
 import time
 import re
+import os
 
 st.set_page_config(page_title="PDF Quiz Generator", layout="wide")
 
@@ -52,14 +53,21 @@ st.markdown("""
 # Function to extract text from PDF
 def extract_text_from_pdf(file):
     text = ""
-    pdf_document = fitz.open(stream=file.read(), filetype="pdf")
-    for page in pdf_document:
-        text += page.get_text()
+    try:
+        pdf_document = fitz.open(stream=file.read(), filetype="pdf")
+        for page in pdf_document:
+            text += page.get_text()
+    except Exception as e:
+        st.error(f"Error extracting text from PDF: {e}")
     return text
+
+# Function to chunk text to avoid token limit
+def chunk_text(text, chunk_size=1000):
+    return [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
 
 # Function to generate questions using OpenAI API
 def generate_questions(text, num_questions, difficulty, model, api_key):
-    openai.api_key = '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'
+    openai.api_key = api_key
 
     messages = [
         {"role": "system", "content": "You are a helpful assistant that creates multiple-choice questions."},
@@ -121,8 +129,6 @@ def parse_questions(raw_questions):
                     })
                 else:
                     st.warning(f"Skipping invalid question: {q}")
-                    st.write(f"Options: {options}, Correct Answer: {correct_answer}")
-
             except Exception as e:
                 st.warning(f"Error parsing question: {question}")
                 st.write(f"Error Details: {e}")
@@ -133,8 +139,17 @@ def parse_questions(raw_questions):
 def main():
     st.title("PDF Quiz Generator and Solver")
 
+    # Initialize session state variables
+    if "questions" not in st.session_state:
+        st.session_state["questions"] = []
+    if "start_time" not in st.session_state:
+        st.session_state["start_time"] = None
+    if "results_displayed" not in st.session_state:
+        st.session_state["results_displayed"] = False
+
     uploaded_file = st.file_uploader("Upload your PDF file", type="pdf")
-    col1, col2, col3 = st.columns()
+
+    col1, col2, col3 = st.columns(3)
     with col1:
         num_questions = st.number_input("Number of questions to generate", min_value=1, value=5)
     with col2:
@@ -142,17 +157,31 @@ def main():
     with col3:
         model = st.selectbox("Select Model", ["gpt-3.5-turbo"])
 
+    # Securely load API key
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        st.error("OpenAI API key is not configured. Set the key as an environment variable.")
+        return
+
     if uploaded_file is not None and st.button("Generate Quiz"):
         with st.spinner("Extracting text and generating questions..."):
             pdf_text = extract_text_from_pdf(uploaded_file)
-            raw_questions = generate_questions(pdf_text, num_questions, difficulty, model, api_key)
-            questions = parse_questions(raw_questions)
 
-        st.session_state["questions"] = questions
-        st.session_state["start_time"] = time.time()
-        st.session_state["results_displayed"] = False
+            if pdf_text.strip():
+                chunks = chunk_text(pdf_text)
+                raw_questions = ""
+                for chunk in chunks:
+                    raw_questions += generate_questions(chunk, num_questions, difficulty, model, api_key) + "\n"
 
-    if "questions" in st.session_state:
+                questions = parse_questions(raw_questions)
+
+                st.session_state["questions"] = questions
+                st.session_state["start_time"] = time.time()
+                st.session_state["results_displayed"] = False
+            else:
+                st.error("No text could be extracted from the PDF. Please try a different file.")
+
+    if "questions" in st.session_state and st.session_state["questions"]:
         st.header("Quiz")
         user_answers = []
         for i, question in enumerate(st.session_state["questions"]):
@@ -175,7 +204,7 @@ def main():
 
     if "results_displayed" in st.session_state and st.session_state["results_displayed"]:
         st.success("Overview Metrics")
-        metrics_col1, metrics_col2, metrics_col3, metrics_col4 = st.columns(3)
+        metrics_col1, metrics_col2, metrics_col3, metrics_col4 = st.columns(4)
 
         with metrics_col1:
             st.markdown(f"<h4 class='card'>Correct Answers<br><br><span class='metric-value'>{st.session_state['correct_answers']}/{num_questions}</span></h4>", unsafe_allow_html=True)
