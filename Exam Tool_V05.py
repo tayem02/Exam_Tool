@@ -5,6 +5,7 @@ import fitz  # PyMuPDF
 import openai
 import time
 import re
+api_key = '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'
 
 st.set_page_config(page_title="PDF Quiz Generator", layout="wide")
 
@@ -134,14 +135,12 @@ def main():
     st.title("PDF Quiz Generator and Solver")
 
     uploaded_file = st.file_uploader("Upload your PDF file", type="pdf")
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns()
     with col1:
         num_questions = st.number_input("Number of questions to generate", min_value=1, value=5)
     with col2:
         difficulty = st.selectbox("Select Difficulty Level", ["Easy", "Medium", "Hard"])
     with col3:
-        api_key = st.text_input("Enter your OpenAI API Key", type="password")
-    with col4:
         model = st.selectbox("Select Model", ["gpt-3.5-turbo"])
 
     if uploaded_file is not None and st.button("Generate Quiz"):
@@ -177,7 +176,7 @@ def main():
 
     if "results_displayed" in st.session_state and st.session_state["results_displayed"]:
         st.success("Overview Metrics")
-        metrics_col1, metrics_col2, metrics_col3, metrics_col4 = st.columns(4)
+        metrics_col1, metrics_col2, metrics_col3, metrics_col4 = st.columns(3)
 
         with metrics_col1:
             st.markdown(f"<h4 class='card'>Correct Answers<br><br><span class='metric-value'>{st.session_state['correct_answers']}/{num_questions}</span></h4>", unsafe_allow_html=True)
