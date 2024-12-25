@@ -59,9 +59,7 @@ def extract_text_from_pdf(file):
 
 # Function to generate questions using OpenAI API
 def generate_questions(text, num_questions, difficulty, model, api_key):
-    api_key = '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'
-
-    openai.api_key = api_key
+    openai.api_key = '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'
 
     messages = [
         {"role": "system", "content": "You are a helpful assistant that creates multiple-choice questions."},
