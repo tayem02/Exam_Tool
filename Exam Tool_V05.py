@@ -155,7 +155,7 @@ def main():
     with col2:
         difficulty = st.selectbox("Select Difficulty Level", ["Easy", "Medium", "Hard"])
     with col3:
-        model = st.selectbox("Select Model", ["gpt-3.5-turbo"])
+        model = st.selectbox("Select Model", ["gpt-3.5-turbo" , "gpt-4"])
 
     # Securely load API key
     api_key = os.getenv("OPENAI_API_KEY")
