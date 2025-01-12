@@ -70,7 +70,7 @@ def generate_questions(text, num_questions, difficulty, model, api_key):
         response = openai.ChatCompletion.create(
             model=model,
             messages=messages,
-            max_tokens=10000
+            max_tokens=4000
         )
         return response["choices"][0]["message"]["content"]
     except Exception as e:
