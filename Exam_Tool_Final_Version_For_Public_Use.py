@@ -117,7 +117,8 @@ def main():
             pdf_text = extract_text_from_pdf(uploaded_file)
             questions = []
 
-            for chunk in chunk_text(pdf_text):
+            # Handle any size of file by processing in chunks
+            for chunk in chunk_text(pdf_text, chunk_size=1000):
                 raw_questions = generate_questions(chunk, num_questions, difficulty, model, api_key)
                 questions.extend(parse_questions(raw_questions))
 
