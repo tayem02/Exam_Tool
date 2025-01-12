@@ -90,7 +90,7 @@ Text:
         response = openai.ChatCompletion.create(
             model=model,
             messages=messages,
-            max_tokens=2000
+            max_tokens=10000
         )
         return response["choices"][0]["message"]["content"]
     except Exception as e:
